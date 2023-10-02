@@ -4,6 +4,9 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
+
+	"realityengine.org/m/v2/opendream"
 
 	"cloud.google.com/go/storage"
 )
@@ -21,8 +24,8 @@ func main() {
 	}
 	defer client.Close()
 
-	provider := NewStorageProvider(client, bucketName, objectName)
-	handler := NewHandler(provider)
+	provider := opendream.NewStorageProvider(client, bucketName, objectName)
+	handler := opendream.NewHandler(provider)
 
 	http.HandleFunc("/", handler.ServeCSV)
 	// App Engine provides the port to bind to as an environment variable

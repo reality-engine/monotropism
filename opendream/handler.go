@@ -1,4 +1,4 @@
-package main
+package opendream
 
 import (
 	"net/http"
