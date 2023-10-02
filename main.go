@@ -25,6 +25,11 @@ func main() {
 	handler := NewHandler(provider)
 
 	http.HandleFunc("/", handler.ServeCSV)
-	log.Println("Server is listening on port 8000...")
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	// App Engine provides the port to bind to as an environment variable
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // Default port if not specified
+	}
+	log.Printf("Server is listening on port %s...", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

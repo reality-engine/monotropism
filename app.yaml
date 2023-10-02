@@ -1,1 +1,5 @@
 runtime: go121
+instance_class: F1 # Use F1 for the smallest instance class
+automatic_scaling:
+  target_cpu_utilization: 0.65
+  max_instances: 2 # Keep max instances low to handle very little traffic
