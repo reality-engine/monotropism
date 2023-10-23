@@ -85,7 +85,7 @@ func QueryBigQuery(ctx context.Context, projectID string, rowLimit string) (*big
 	}
 	defer client.Close()
 
-	queryString := fmt.Sprintf(`SELECT * FROM skillful-flow-399108.texteeg.eeg2text LIMIT %s`, rowLimit)
+	queryString := fmt.Sprintf(`SELECT InputEmbeddings, SeqLen, InputAttnMask, InputAttnMaskInvert, TargetIds, TargetMask, SentimentLabel, SentLevelEEG FROM skillful-flow-399108.texteeg.eeg2text LIMIT %s`, rowLimit)
 	query := client.Query(queryString)
 	return query.Read(ctx)
 }
