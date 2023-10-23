@@ -30,7 +30,7 @@ type EEGRecord struct {
 
 func (h *handler) ServeCSV(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
-	rows, err := QueryBigQuery(ctx, "your-gcp-project-id")
+	rows, err := QueryBigQuery(ctx, "skillful-flow-399108")
 	if err != nil {
 		http.Error(w, "Unable to query BigQuery", http.StatusInternalServerError)
 		return
