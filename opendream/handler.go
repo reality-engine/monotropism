@@ -3,7 +3,9 @@ package opendream
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"cloud.google.com/go/bigquery"
 	"google.golang.org/api/iterator"
@@ -30,7 +32,21 @@ type EEGRecord struct {
 
 func (h *handler) ServeCSV(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
-	rows, err := QueryBigQuery(ctx, "skillful-flow-399108")
+
+	// Retrieve the number of rows from the query parameter "rows"
+	rowLimit := r.URL.Query().Get("rows")
+	if rowLimit == "" {
+		rowLimit = "1000" // default value if not specified
+	}
+
+	// Ensure the provided value is a valid integer
+	_, err := strconv.Atoi(rowLimit)
+	if err != nil {
+		http.Error(w, "Invalid row limit provided", http.StatusBadRequest)
+		return
+	}
+
+	rows, err := QueryBigQuery(ctx, "skillful-flow-399108", rowLimit)
 	if err != nil {
 		http.Error(w, "Unable to query BigQuery", http.StatusInternalServerError)
 		return
@@ -62,13 +78,14 @@ func (h *handler) ServeCSV(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
-func QueryBigQuery(ctx context.Context, projectID string) (*bigquery.RowIterator, error) {
+func QueryBigQuery(ctx context.Context, projectID string, rowLimit string) (*bigquery.RowIterator, error) {
 	client, err := bigquery.NewClient(ctx, projectID)
 	if err != nil {
 		return nil, err
 	}
 	defer client.Close()
 
-	query := client.Query(`SELECT * FROM skillful-flow-399108.texteeg.eeg2text LIMIT 1000`)
+	queryString := fmt.Sprintf(`SELECT * FROM skillful-flow-399108.texteeg.eeg2text LIMIT %s`, rowLimit)
+	query := client.Query(queryString)
 	return query.Read(ctx)
 }
