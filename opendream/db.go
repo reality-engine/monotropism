@@ -35,16 +35,16 @@ func NewDataStore() DataStore {
 func (store *bigQueryStore) QueryEEGData(ctx context.Context, projectID, rowLimit string) ([]EEGRecord, error) {
 	client, err := bigquery.NewClient(ctx, projectID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create BigQuery client: %v", err)
 	}
 	defer client.Close()
 
-	queryString := fmt.Sprintf(`SELECT input_embeddings, seq_len, input_attn_mask, input_attn_mask_invert, target_ids, target_mask, sentiment_label, sent_level_EEG FROM skillful-flow-399108.texteeg.all LIMIT %s`, rowLimit)
+	queryString := fmt.Sprintf("SELECT input_embeddings, seq_len, input_attn_mask, input_attn_mask_invert, target_ids, target_mask, sentiment_label, sent_level_EEG FROM `skillful-flow-399108.texteeg.all` LIMIT %s", rowLimit)
 	query := client.Query(queryString)
 
 	it, err := query.Read(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to read from BigQuery: %v", err)
 	}
 
 	var records []EEGRecord
@@ -55,9 +55,13 @@ func (store *bigQueryStore) QueryEEGData(ctx context.Context, projectID, rowLimi
 			break
 		}
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Error while iterating over BigQuery results: %v", err)
 		}
 		records = append(records, record)
+	}
+
+	if len(records) == 0 {
+		return nil, fmt.Errorf("No records found in BigQuery")
 	}
 
 	return records, nil
